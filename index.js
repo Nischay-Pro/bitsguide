@@ -11,10 +11,10 @@ var queries = [{
     text: "Have you written the BITSAT Exam?",
     answers: [{
         text: "Yes",
-        target: 2
+        target: 3
     }, {
         text: "No",
-        target: 3
+        target: 2
     }]
 }, {
     id: 2,
@@ -38,7 +38,7 @@ var queries = [{
         target: 6
     }, {
         text: "No",
-        target: 7
+        target: 15
     }]
 }, {
     id: 5,
@@ -110,11 +110,56 @@ var queries = [{
     id: 14,
     text: "Sorry. You did not get selected based on your preference. Better luck next time.",
     answers: []
+}, {
+    id: 15,
+    text: "Please consult with your seniors before selecting your preferences.",
+    answers: []
 }];
 
-function AppViewModel() {
-    this.text = ko.observable();
-    this.subhead = ko.observable();
+function QueryViewModel() {
+    var self = this;
+    self.querySet = ko.observable();
+    self.currentStep = ko.observable();
+    self.queryData = ko.observable();
+    self.navHistory = ko.observableArray();
+    self.goToTarget = function (obj) {
+        self.navHistory.push(self.currentStep());
+        self.currentStep(obj.target);
+        self.queryData(self.querySet()[obj.target]);
+    }
+    self.stepBack = function () {
+        var lastStep = self.navHistory().length > 1 ? self.navHistory.pop() : 0;
+        self.currentStep(lastStep);
+        self.queryData(self.querySet()[lastStep]);
+    }
+    var paramsString = document.location.hash.substring(1);
+    var params = new Array();
+    if (paramsString) {
+        var paramValues = paramsString.split("&");
+        for (var i = 0; i < paramValues.length; i++) {
+            var paramValue = paramValues[i].split("=");
+            params[paramValue[0]] = paramValue[1];
+        }
+    }
+    ko.computed(function updateHash() {
+        if (self.currentStep()) {
+            document.location.hash = 'target=' + self.currentStep();
+        } else {
+            document.location.hash = "";
+        }
+    });
+    params ? paramTarget = params['target'] : params = [];
+    self.querySet(queries);
+    if (paramTarget) {
+        self.navHistory.push(0);
+        self.currentStep(0);
+        self.goToTarget({
+            target: paramTarget
+        })
+    } else {
+        self.goToTarget({
+            target: 0
+        });
+    }
 }
-
-ko.applyBindings(new AppViewModel());
+ko.applyBindings(new QueryViewModel());
