@@ -113,8 +113,8 @@ var queries = [{
 }];
 
 function AppViewModel() {
-    this.text = ko.observable("Ns");
-    this.subhead = ko.observable("ghj");
+    this.text = ko.observable();
+    this.subhead = ko.observable();
 }
 
 ko.applyBindings(new AppViewModel());
